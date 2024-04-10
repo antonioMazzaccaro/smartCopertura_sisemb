@@ -27,7 +27,7 @@ int16_t sogliaPeso = 0;
 float previousConfidenza = 0.0f;
 
 double Setpoint, Input, Output;
-double Kp=2, Ki=5, Kd=1;
+double Kp=2, Ki=2, Kd=1;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 
@@ -36,7 +36,8 @@ void setupContenitore() {
   pinMode(TEMP_CONTENITORE_SENSOR, INPUT);
   pinMode(OUTPUT_RESISTANCE, OUTPUT);
 
-  
+  Setpoint = analogRead(TEMP_CONTENITORE_SENSOR);
+  myPID.SetMode(AUTOMATIC);
 
   for (uint8_t i = 0; i < NUM_READ_CALIBRAZ_CONTENITORE; i++) {
     sogliaPeso += analogRead(WEIGHT_CONTENITORE_SENSOR);
@@ -79,14 +80,16 @@ void check() {
   float newConfidenza = ((0.35f * ((float)(weight - sogliaPeso) / 1023.0f)) + (0.45f * ((seriesOfKnocksDetected) ? 1.0f : 0.0f)) + (0.2f * (float)meteoCoeff));
   
   float combinedConfidenza = ((0.3f * previousConfidenza) + (0.7f * newConfidenza));
-  
+  previousConfidenza = combinedConfidenza;
+
   if (combinedConfidenza > SOGLIA_CONFIDENZA) {
-    previousConfidenza = combinedConfidenza;
     tiraGiu();
     analogWrite(OUTPUT_RESISTANCE, 0);
   } else if (!isCoperturaAperta()) {
     tiraSu();
   } else if (weight > sogliaPeso) {
-    
+    Input = analogRead(TEMP_CONTENITORE_SENSOR);
+    myPID.Compute();
+    analogWrite(OUTPUT_RESISTANCE, Output);
   }
 }
