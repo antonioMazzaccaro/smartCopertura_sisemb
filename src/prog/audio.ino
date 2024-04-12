@@ -16,35 +16,32 @@
 */
 
 #define MIC_PIN 35
-#define MAX_TIME_RANGE 200
+#define MAX_TIME_RANGE 1000
 
 #define NUM_READ_CALIBRAZ_MIC 100
 
-bool lastTimeHigh = false;
-uint16_t threshold = 0;
+uint32_t thresholdUp = 0;
+uint32_t thresholdDown = 0;
 uint16_t count = 0;
 uint16_t remainingTimeRange = MAX_TIME_RANGE;
 
 void setupAudio() {
   pinMode(MIC_PIN, INPUT);
-  threshold = 0;
+  uint32_t threshold = 0;
   for (uint8_t i = 0; i < NUM_READ_CALIBRAZ_MIC; i++) {
     threshold += analogRead(MIC_PIN);
     delay(50);
   }
   threshold /= NUM_READ_CALIBRAZ_MIC;
-  threshold = (uint16_t)((float)threshold * 1.2f);  // aumentata del 20%
+  thresholdUp = (uint32_t)((float)threshold * 1.07f);  // aumentata del 7%
+  thresholdDown = (uint32_t)((float)threshold * 0.93f);  // diminuita del 7%
+  Serial.println(threshold);
 }
 
 void campionaAudio() {
-  int n = analogRead(MIC_PIN);
-  if (n > threshold) {
-    if (!lastTimeHigh) {
-      lastTimeHigh = true;
-      count++;
-    }
-  } else {
-    lastTimeHigh = true;
+  uint32_t n = analogRead(MIC_PIN);
+  if (n > thresholdUp || n < thresholdDown) {
+    count++;
   }
 
   if (remainingTimeRange == 0) {
@@ -55,7 +52,8 @@ void campionaAudio() {
   }
 
   if (remainingTimeRange < (MAX_TIME_RANGE / 2)) {
-    if (count > (uint16_t)(0.25f * (float)(MAX_TIME_RANGE - remainingTimeRange) / 2.0f)) {
+    if (count > (uint16_t)(0.02f * (float)MAX_TIME_RANGE)) {
+      
       seriesOfKnocksDetected = true;
     } else {
       seriesOfKnocksDetected = false;

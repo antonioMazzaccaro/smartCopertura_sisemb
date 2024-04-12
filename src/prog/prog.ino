@@ -18,7 +18,7 @@
 #include "lib.h"
 
 //Tasks
-Task audioTask(40, TASK_FOREVER, &campionaAudio);
+Task audioTask(10, TASK_FOREVER, &campionaAudio);
 Task chiediMeteoTask(120000, TASK_FOREVER, &chiediMeteoCallback);
 Task leggiRispMeteoTask(5000, TASK_FOREVER, &leggiRispMeteo);
 Task checkTask(500, TASK_FOREVER, &check);

@@ -77,7 +77,7 @@ void check() {
   }
 
   float meteoCoeff = evalMeteoCoeff();
-  float newConfidenza = ((0.35f * ((float)(weight - sogliaPeso) / 1023.0f)) + (0.45f * ((seriesOfKnocksDetected) ? 1.0f : 0.0f)) + (0.2f * (float)meteoCoeff));
+  float newConfidenza = ((0.35f * ((weight > sogliaPeso)? 1.0f : 0.0f)) + (0.45f * ((seriesOfKnocksDetected) ? 1.0f : 0.0f)) + (0.2f * (float)meteoCoeff));
   
   float combinedConfidenza = ((0.3f * previousConfidenza) + (0.7f * newConfidenza));
   previousConfidenza = combinedConfidenza;
