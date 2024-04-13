@@ -18,6 +18,7 @@
 #include <WiFi.h>
 #include <TaskScheduler.h>
 #include <ArduinoJson.h>
+#include <Stepper.h>
 #include <PID_v1.h>
 
 bool seriesOfKnocksDetected = false;

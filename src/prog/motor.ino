@@ -20,19 +20,18 @@
 #define IN3 5
 #define IN4 17
 
-#define FINE_CORSA_GIU 16
-#define FINE_CORSA_SU 4
+#define FINE_CORSA_GIU 4
+#define FINE_CORSA_SU 16
 
-#define MOTOR_SPEED 4
+Stepper myStepper(100, IN1, IN3, IN2, IN4);
 
 void setupMotor() {
-  pinMode(IN1, OUTPUT);
-  pinMode(IN2, OUTPUT);
-  pinMode(IN3, OUTPUT);
-  pinMode(IN4, OUTPUT);
 
   pinMode(FINE_CORSA_GIU, INPUT);
   pinMode(FINE_CORSA_SU, INPUT);
+
+  myStepper.setSpeed(350);
+
 }
 
 bool isCoperturaChiusa() {
@@ -43,52 +42,16 @@ bool isCoperturaAperta() {
   return (digitalRead(FINE_CORSA_SU) == HIGH);
 }
 
-void tiraGiu() {
-  while (digitalRead(FINE_CORSA_GIU) != HIGH) {
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, LOW);
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN4, LOW);
-    delay(MOTOR_SPEED);
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, HIGH);
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN4, LOW);
-    delay(MOTOR_SPEED);
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, LOW);
-    digitalWrite(IN3, HIGH);
-    digitalWrite(IN4, LOW);
-    delay(MOTOR_SPEED);
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, LOW);
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN4, HIGH);
-    delay(MOTOR_SPEED);
+void tiraSu() {
+  while (digitalRead(FINE_CORSA_SU) != HIGH) {
+    Serial.println("clockwise");
+    myStepper.step(-100);
   }
 }
 
-void tiraSu() {
-  while (digitalRead(FINE_CORSA_SU) != HIGH) {
-    digitalWrite(IN4, HIGH);
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN2, LOW);
-    digitalWrite(IN1, LOW);
-    delay(MOTOR_SPEED);
-    digitalWrite(IN4, LOW);
-    digitalWrite(IN3, HIGH);
-    digitalWrite(IN2, LOW);
-    digitalWrite(IN1, LOW);
-    delay(MOTOR_SPEED);
-    digitalWrite(IN4, LOW);
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN2, HIGH);
-    digitalWrite(IN1, LOW);
-    delay(MOTOR_SPEED);
-    digitalWrite(IN4, LOW);
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN2, LOW);
-    digitalWrite(IN1, HIGH);
-    delay(MOTOR_SPEED);
+void tiraGiu() {
+  while (digitalRead(FINE_CORSA_GIU) != HIGH) {
+    Serial.println("counterclockwise");
+    myStepper.step(100);
   }
 }
