@@ -43,15 +43,15 @@ bool isCoperturaAperta() {
 }
 
 void tiraSu() {
+  Serial.println("apertura");
   while (digitalRead(FINE_CORSA_SU) != HIGH) {
-    Serial.println("clockwise");
     myStepper.step(-100);
   }
 }
 
 void tiraGiu() {
+  Serial.println("chiusura");
   while (digitalRead(FINE_CORSA_GIU) != HIGH) {
-    Serial.println("counterclockwise");
     myStepper.step(100);
   }
 }

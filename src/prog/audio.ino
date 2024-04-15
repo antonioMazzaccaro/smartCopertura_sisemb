@@ -33,8 +33,8 @@ void setupAudio() {
     delay(50);
   }
   threshold /= NUM_READ_CALIBRAZ_MIC;
-  thresholdUp = (uint32_t)((float)threshold * 1.07f);  // aumentata del 7%
-  thresholdDown = (uint32_t)((float)threshold * 0.93f);  // diminuita del 7%
+  thresholdUp = (uint32_t)((float)threshold * 1.1f);  // aumentata del 10%
+  thresholdDown = (uint32_t)((float)threshold * 0.9f);  // diminuita del 10%
   Serial.println(threshold);
 }
 
@@ -52,7 +52,7 @@ void campionaAudio() {
   }
 
   if (remainingTimeRange < (MAX_TIME_RANGE / 2)) {
-    if (count > (uint16_t)(0.02f * (float)MAX_TIME_RANGE)) {
+    if (count > (uint16_t)(0.03f * (float)MAX_TIME_RANGE)) {
       
       seriesOfKnocksDetected = true;
     } else {

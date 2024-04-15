@@ -21,13 +21,13 @@
 
 #define NUM_READ_CALIBRAZ_CONTENITORE 20
 
-#define SOGLIA_CONFIDENZA 0.5f
+#define SOGLIA_CONFIDENZA 0.55f
 
 int16_t sogliaPeso = 0;
 float previousConfidenza = 0.0f;
 
 double Setpoint, Input, Output;
-double Kp=2, Ki=2, Kd=1;
+double Kp=3, Ki=1, Kd=0;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 
@@ -36,7 +36,7 @@ void setupContenitore() {
   pinMode(TEMP_CONTENITORE_SENSOR, INPUT);
   pinMode(OUTPUT_RESISTANCE, OUTPUT);
 
-  Setpoint = analogRead(TEMP_CONTENITORE_SENSOR);
+  setSogliaTempSensor();
   myPID.SetMode(AUTOMATIC);
 
   for (uint8_t i = 0; i < NUM_READ_CALIBRAZ_CONTENITORE; i++) {
@@ -45,6 +45,10 @@ void setupContenitore() {
   }
   sogliaPeso /= NUM_READ_CALIBRAZ_CONTENITORE;
   sogliaPeso = (int16_t)((float)sogliaPeso * 1.2f);  // aumentata del 20%
+}
+
+void setSogliaTempSensor() {
+  Setpoint = analogRead(TEMP_CONTENITORE_SENSOR) * 0.95;
 }
 
 float evalMeteoCoeff() {
@@ -71,6 +75,11 @@ void check() {
 
   int16_t weight = analogRead(WEIGHT_CONTENITORE_SENSOR);
 
+  Serial.print("Peso: ");
+  Serial.println(weight);
+  Serial.print("seriesOfKnocksDetected: ");
+  Serial.println(seriesOfKnocksDetected);
+
   if (isCoperturaChiusa() && seriesOfKnocksDetected) {
     analogWrite(OUTPUT_RESISTANCE, 0);
     return;
@@ -79,7 +88,7 @@ void check() {
   float meteoCoeff = evalMeteoCoeff();
   float newConfidenza = ((0.35f * ((weight > sogliaPeso)? 1.0f : 0.0f)) + (0.45f * ((seriesOfKnocksDetected) ? 1.0f : 0.0f)) + (0.2f * (float)meteoCoeff));
   
-  float combinedConfidenza = ((0.3f * previousConfidenza) + (0.7f * newConfidenza));
+  float combinedConfidenza = ((0.4f * previousConfidenza) + (0.6f * newConfidenza));
   previousConfidenza = combinedConfidenza;
 
   if (combinedConfidenza > SOGLIA_CONFIDENZA) {
@@ -91,5 +100,7 @@ void check() {
     Input = analogRead(TEMP_CONTENITORE_SENSOR);
     myPID.Compute();
     analogWrite(OUTPUT_RESISTANCE, Output);
+  } else {
+    analogWrite(OUTPUT_RESISTANCE, 0);
   }
 }
