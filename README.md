@@ -10,15 +10,35 @@ Il riconoscimento di tali fenomeni avversi passa per un'analisi dell'audio ambie
 Alla fine della grandinata i chicchi presenti nel recipiente (opportunamente bucato, simile a uno scolapasta) vengono scaldati con una resistenza per scioglierli in base alla loro temperatura (feedback closed-loop), mentre, in caso di una pioggia di cenere vulcanica, chiaramente non si possono sciogliere i detriti accumulati: questo sarebbe l'unico caso in cui, nella realtà, si renderebbe necessario l'intervento umano per poter riprendere a funzionare correttamente.
 Il sistema acquisisce anche informazioni sul meteo attuale dalla rete, per cercare di ridurre i falsi-positivi e i falsi-negativi, combinando la probabilità di eventi estremi riportata con il grado di confidenza ottenuto dalla valutazione dei suddetti input (suono e peso).
 
-# Hardware
+## Hardware
 Il prototipo è realizzato con un'ESP32-WROOM32, il quale combina la presenza del modulo WiFi per la connettività e un discreto numero di GPIO (alcuni dei quali dotati anche di DAC e ADC, oltre alla PWM) alle discrete prestazioni dei due core Xtensa a 240MHz. All'MCU sono collegati il microfono per il riconoscimento del suono della grandine, un sensore di pressione, sopra il quale è collocato il cestello che raccoglie i chicchi, un sensore di temperatura (che nell'ambito della demo sarà sostituito da un potenziometro per poter pilotare la temperatura voluta), una resistenza riscaldante (che per ovvi motivi, come per il sensore di temperatura, sarà sostituita da un LED rosso), un ponte H per pilotare il motore che aziona la "saracinesca" e due fine-corsa per fermarne l'apertura e la chiusura.
+L'unico piccolo inconveniente è dato dalla sensibilità del sensore di pressione in possesso (di tipo a film sottile), il quale necessita di un peso leggermente più alto di quello di una biglia (o di una pallina dei vecchi mouse) per abbassare la sua resistenza iniziale e far passare una corrente tale da rilevare la presenza di grandine, quindi nella dimostrazione bisogna talvolta aiutarsi con le dita per "spingere verso il basso" il cestello e produrre un peso sufficiente.
 
 ![prototipo](./asset/images/prototipo.jpg)
 
-Il motore utilizzato nel prototipo è uno step-motor: tale scelta è dovuta principalmente alla precisione maggiore rispetto ad un motore in corrente continua (sia in termini di posizione e sia in termini di regolazione della velocità). Uno svantaggio di tale scelta è che il motore rimane sempre alimentato, anche da fermo.
+Il motore utilizzato nel prototipo è uno step-motor: tale scelta è dovuta principalmente alla precisione maggiore rispetto ad un motore in corrente continua (sia in termini di posizione e sia in termini di regolazione della velocità). Uno svantaggio di tale scelta è che il motore rimane sempre alimentato, anche da fermo. Il ponte H preleva l'alimentazione "di potenza" da un modulo di alimentazione per breadboard, che gli eroga 5V con una corrente decisamente maggiore a quella erogabile dall'MCU, che non basterebbe per azionare il motore.
 
 ![motore](./asset/images/motore.jpg)
 
 I fine-corsa usati in questo progetto sono "improvvisati", infatti sono stati realizzati con tre cavetti semi-rigidi, di cui due fissati nei punti di massima apertura e massima chiusura, piegati in modo da fare contatto col cavetto che porta tensione, il quale è fissato sulla cinghia che trasporta la saracinesca.
 
 ![fine-corsa](./asset/images/fine-corsa.jpg)
+
+Il supporto è interamente in legno di recupero.
+
+## Software
+Sono utilizzate le seguenti librerie:
+- **WiFi.h** per l'utilizzo del modulo WiFi per la connettività;
+- **TaskScheduler.h** per la suddivisione del programma in task da eseguire a intervalli regolari;
+- **ArduinoJson.h** per ottenere le info sul meteo dal payload della risposta dell'API meteo;
+- **Stepper.h** per pilotare il motore sia in senso orario (apertura saracinesca) che anti-orario (chiusura);
+- **PID_v1.h** per elaborare l'intensità di accensione della resistenza in base al feedback sulla temperatura del cestello.
+
+Il programma è suddiviso nei seguenti task:
+- **audioTask** ogni 10 millisecondi, per campionare l'audio ambientale e riconoscere una serie di colpetti generati dalla caduta dei chicchi di grandine;
+- **chiediMeteoTask** ogni 120000 millisecondi, per richiedere info meteo aggiornate;
+- **leggiRispMeteoTask** ogni 5000, fa effettivamente qualcosa solo se è stata prima fatta una richiesta all'API meteo ed è arrivata la risposta dentro al client WiFi;
+- **checkTask** ogni 500 millisecondi, effettua il calcolo del grado di confidenza sulla presenza di grandine, combinando peso, rumore e dati meteo, e si comporta di conseguenza aprendo o chiudendo la copertura, oppure scaldando il cestello tramite la resistenza usando il controllo closed-loop PID sulla temperatura.
+
+## Possibili miglioramenti
+Un possibile miglioramento potrebbe essere la rilevazione delle condizioni di luminosità tramite una fotoresistenza (è difficile che grandini col sole), oppure si potrebbe anche impiegare un'intelligenza artificiale in grado di riconoscere il rumore della grandine e discernerlo, ad esempio, dal verso di una cicala...
