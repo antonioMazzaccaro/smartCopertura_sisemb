@@ -37,8 +37,10 @@ Sono utilizzate le seguenti librerie:
 Il programma è suddiviso nei seguenti task:
 - **audioTask** ogni 10 millisecondi, per campionare l'audio ambientale e riconoscere una serie di colpetti generati dalla caduta dei chicchi di grandine;
 - **chiediMeteoTask** ogni 120000 millisecondi, per richiedere info meteo aggiornate;
-- **leggiRispMeteoTask** ogni 5000, fa effettivamente qualcosa solo se è stata prima fatta una richiesta all'API meteo ed è arrivata la risposta dentro al client WiFi;
+- **leggiRispMeteoTask** ogni 5000 millisecondi, fa effettivamente qualcosa solo se è stata prima fatta una richiesta all'API meteo ed è arrivata la risposta dentro al client WiFi;
 - **checkTask** ogni 500 millisecondi, effettua il calcolo del grado di confidenza sulla presenza di grandine, combinando peso, rumore e dati meteo, e si comporta di conseguenza aprendo o chiudendo la copertura, oppure scaldando il cestello tramite la resistenza usando il controllo closed-loop PID sulla temperatura.
+
+Per semplicità di scrittura del programma si considera lo startup del sistema come l'unico momento di inizializzazione e taratura dei sensori, si assume pertanto che il sistema venga avviato in una situazione di assenza di rumori e di oggetti nel cestello e che il potenziometro della temperatura sia inizialmente posizionato sulla temperatura ambiente ragionevole (verso il centro). L'introduzione di un secondo sensore che misuri la temperatura dell'ambiente circostante, oltre a quello del recipiente, risolverebbe il problema della taratura, in quanto ogni volta la temperatura target da raggiungere sarebbe quella dell'ambiente misurata di volta in volta, e non quella inizialmente tarata lasciando il potenziometro a metà, come descritto poc'anzi.
 
 ## Possibili miglioramenti
 Un possibile miglioramento potrebbe essere la rilevazione delle condizioni di luminosità tramite una fotoresistenza (è difficile che grandini col sole), oppure si potrebbe anche impiegare un'intelligenza artificiale in grado di riconoscere il rumore della grandine e discernerlo, ad esempio, dal verso di una cicala...

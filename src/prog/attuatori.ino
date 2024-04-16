@@ -27,7 +27,7 @@ int16_t sogliaPeso = 0;
 float previousConfidenza = 0.0f;
 
 double Setpoint, Input, Output;
-double Kp=3, Ki=1, Kd=0;
+double Kp=0.8, Ki=0, Kd=0.01;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 
@@ -49,11 +49,12 @@ void setupContenitore() {
 
 void setSogliaTempSensor() {
   Setpoint = analogRead(TEMP_CONTENITORE_SENSOR) * 0.95;
+  Setpoint = map(Setpoint, 0, 4095, 0, 1023);
 }
 
 float evalMeteoCoeff() {
   if (meteo.id == 0) {  // meteo non presente
-    return 0.5;
+    return 0.0;
   }
 
   if (meteo.id == 511) { // caso esplicito freezing rain
@@ -77,8 +78,9 @@ void check() {
 
   Serial.print("Peso: ");
   Serial.println(weight);
-  Serial.print("seriesOfKnocksDetected: ");
+  Serial.print("Rumori: ");
   Serial.println(seriesOfKnocksDetected);
+  
 
   if (isCoperturaChiusa() && seriesOfKnocksDetected) {
     analogWrite(OUTPUT_RESISTANCE, 0);
@@ -86,20 +88,32 @@ void check() {
   }
 
   float meteoCoeff = evalMeteoCoeff();
-  float newConfidenza = ((0.35f * ((weight > sogliaPeso)? 1.0f : 0.0f)) + (0.45f * ((seriesOfKnocksDetected) ? 1.0f : 0.0f)) + (0.2f * (float)meteoCoeff));
+  float newConfidenza = ((0.35f * ((weight > sogliaPeso)? 1.0f : 0.0f)) + (0.45f * ((seriesOfKnocksDetected) ? 1.0f : 0.0f)) + (0.2f * meteoCoeff));
   
   float combinedConfidenza = ((0.4f * previousConfidenza) + (0.6f * newConfidenza));
   previousConfidenza = combinedConfidenza;
 
   if (combinedConfidenza > SOGLIA_CONFIDENZA) {
-    tiraGiu();
     analogWrite(OUTPUT_RESISTANCE, 0);
+    tiraGiu();
   } else if (!isCoperturaAperta()) {
     tiraSu();
   } else if (weight > sogliaPeso) {
+    
     Input = analogRead(TEMP_CONTENITORE_SENSOR);
+    Input = map(Input, 0, 4095, 0, 1023);
+    
     myPID.Compute();
+    
+    Output = map(Output, 0, 255, 0, 1023);
+    
     analogWrite(OUTPUT_RESISTANCE, Output);
+
+    Serial.print("Input Temp: ");
+    Serial.println(Input);
+    Serial.print("Output PID: ");
+    Serial.println(Output);
+
   } else {
     analogWrite(OUTPUT_RESISTANCE, 0);
   }
