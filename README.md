@@ -50,5 +50,7 @@ Nel calcolo PID per il controllo della temperatura all'interno del cestello sono
 Le costanti sono basse perché è stato notato che la libreria produceva spesso un output "a fondoscala" anche per scostamenti bassi dal target, mentre con i suddetti valori l'output è diventato ragionevole.
 Bisogna rilevare che questa libreria PID ha delle limitazioni: una su tutte è la limitazione dell'output a 255 in PWM, perché è stata pensata per Arduino, mentre l'output di ESP32 in PWM è maggiore, usando una PWM a 10 bit il massimo è 1023, quindi si sono rese necessarie delle operazioni di mappatura dei valori su un altro intervallo, tramite l'istruzione map().
 
+![piedinatura](./asset/images/esp32-smartCopertura.png)
+
 ## Possibili miglioramenti
 Un possibile miglioramento potrebbe essere la rilevazione delle condizioni di luminosità tramite una fotoresistenza (è difficile che grandini col sole), oppure si potrebbe anche impiegare un'intelligenza artificiale in grado di riconoscere il rumore della grandine e discernerlo, ad esempio, dal verso di una cicala...
